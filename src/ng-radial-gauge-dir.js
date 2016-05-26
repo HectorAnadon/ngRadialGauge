@@ -423,21 +423,24 @@ angular.module("ngRadialGauge", [])
 
               scope.mouseover = function() {
                 return function(d) {
-                  var name = '',
-                    styleTooltip = '';
-                  if (d[4]) {
-                    name =
-                      '<td style="padding-left: 5px;font-weight: normal">' +
-                      d[4] + ':</td>'
+                  if (scope.showTip) {
+                    var name = '',
+                      styleTooltip = '';
+                    if (d[4]) {
+                      name =
+                        '<td style="padding-left: 5px;font-weight: normal">' +
+                        d[4] + ':</td>'
+                    }
+
+                    tip.html('<table class="tooltipLegend"><tr>' +
+                      '<td class="legend-color-guide" style="background-color: ' +
+                      d[2] + ';"></td>' + name +
+                      '<td class="legend">' + d[0] +
+                      ' % to ' +
+                      d[1] + ' %</td></tr></table>');
+                    tip.show();
                   }
 
-                  tip.html('<table class="tooltipLegend"><tr>' +
-                    '<td class="legend-color-guide" style="background-color: ' +
-                    d[2] + ';"></td>' + name +
-                    '<td class="legend">' + d[0] +
-                    ' % to ' +
-                    d[1] + ' %</td></tr></table>');
-                  tip.show();
                   d3.select(this)
                     .attr('fill', d[3] || d[2])
                 };
@@ -445,9 +448,12 @@ angular.module("ngRadialGauge", [])
 
               scope.mouseout = function() {
                 return function(d) {
-                  tip.hide();
-                  d3.selectAll(".d3-tip")
-                    .style("opacity", 0);
+                  if (scope.showTip) {
+                    tip.hide();
+                    d3.selectAll(".d3-tip")
+                      .style("opacity", 0);
+                  }
+
                   d3.select(this)
                     .attr('fill', function(d) {
                       return d[2];
@@ -467,8 +473,8 @@ angular.module("ngRadialGauge", [])
                   }
 
                 })
-                .on('mouseover', scope.showTip ? scope.mouseover() : void 0)
-                .on('mouseout', scope.showTip ? scope.mouseout() : void 0)
+                .on('mouseover', scope.mouseover())
+                .on('mouseout', scope.mouseout())
                 .attr("fill", function(d) {
                   return d[2];
                 })
