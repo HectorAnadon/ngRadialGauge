@@ -108,7 +108,6 @@ angular.module("ngRadialGauge", [])
             majorGraduationPrecision = extractData(
               'majorGraduationPrecision');
             ranges = extractData('ranges');
-            console.log(ranges);
           };
           updateInternalData();
 
