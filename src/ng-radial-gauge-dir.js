@@ -26,7 +26,8 @@ angular.module("ngRadialGauge", [])
           precision: '=',
           majorGraduationPrecision: '=',
           label: '@',
-          onClick: '&'
+          onClick: '&',
+          showTip: '=?'
         },
         link: function(scope, ele, attrs) {
           var defaultUpperLimit = 100;
@@ -39,17 +40,12 @@ angular.module("ngRadialGauge", [])
           //New width variable, now works in conjunction with fixed viewBox sizing
           var _width = attrs.width || "100%";
 
-          var tip = d3.tip()
-            .direction('e') // s or e
-            .style('pointer-events', 'none')
-            .attr('class', 'd3-tip')
-            .style('line-height', '1')
-            .style('font-weight', 'bold')
-            .style('color', 'black')
-            .style('border-radius', '2px')
-            .style('padding', '10px')
-            .style('border', '1px solid grey')
-            .style('background-color', 'white');
+          if (scope.showTip) {
+            var tip = d3.tip()
+              .direction('e') // s or e
+              .style('pointer-events', 'none')
+              .attr('class', 'd3-tip');
+          }
 
           /* Colin Bester
              Width and height are not really such an issue with SVG but choose these values as
@@ -112,8 +108,19 @@ angular.module("ngRadialGauge", [])
             majorGraduationPrecision = extractData(
               'majorGraduationPrecision');
             ranges = extractData('ranges');
+            console.log(ranges);
           };
           updateInternalData();
+
+          var getTotalColor = function(value) {
+            var i;
+
+            for (i = 0; i < ranges.length; i++) {
+              if (value >= ranges[i].min && value < ranges[i].max) {
+                return ranges[i].color;
+              }
+            }
+          };
 
           /* Colin Bester
              Add viewBox and width attributes.
@@ -238,16 +245,7 @@ angular.module("ngRadialGauge", [])
 
           var renderGraduationNeedle = function(value, valueUnit, precision,
             minLimit, maxLimit, d3DataSource) {
-            var getTotalColor = function() {
-              var i;
 
-              for (i = 0; i < d3DataSource.length; i++) {
-                if (value >= d3DataSource[i][0] && value < d3DataSource[
-                    i][1]) {
-                  return d3DataSource[i][2];
-                }
-              }
-            };
             svg.selectAll('.mtt-graduation-needle')
               .remove();
             svg.selectAll('.mtt-graduationValueText')
@@ -339,15 +337,26 @@ angular.module("ngRadialGauge", [])
                   .attr("cy", 0)
                   .attr("cx", 0)
                   .style("filter", "url(#drop-shadow)")
-                  .attr("fill", getTotalColor());
+                  .attr("class", "mtt-middleCircle")
+                  .attr("fill", getTotalColor(value));
                 pg.append("text")
-                  .attr("x", 0)
-                  .attr("y", 2)
+                  .attr("x", "-10")
+                  .attr("y", "0")
+                  .attr("dy", ".4em")
                   .attr("class", "mtt-graduationValueText")
                   .attr("fill", 'white')
-                  .style('font-size', '20px')
+                  .style('font-size', '35px')
                   .attr("text-anchor", "middle")
-                  .text(value + ' %');
+                  .text(value.toFixed(precision));
+                pg.append("text")
+                  .attr("x", "30")
+                  .attr("y", "8")
+                  .attr("dy", ".4em")
+                  .attr("class", "mtt-graduationUnitText")
+                  .attr("fill", 'white')
+                  .style('font-size', '15px')
+                  .attr("text-anchor", "middle")
+                  .text(valueUnit);
               }
             }
 
@@ -370,7 +379,6 @@ angular.module("ngRadialGauge", [])
           scope.$watchCollection('[ranges, data.ranges]', function() {
             scope.render();
           }, true);
-
 
           scope.render = function() {
             updateInternalData();
@@ -410,28 +418,24 @@ angular.module("ngRadialGauge", [])
                   return cScale(d[1]);
                 });
 
-
-              svg.call(tip);
-
+              if (scope.showTip) {
+                svg.call(tip);
+              }
 
               scope.mouseover = function() {
                 return function(d) {
                   var name = '',
-                    styleTooltip = '',
-                    styleColorLegend = 'width: 8px;' +
-                    'height: 8px;' +
-                    'border: 1px solid #999;' +
-                    'vertical-align: middle;';
+                    styleTooltip = '';
                   if (d[4]) {
                     name =
                       '<td style="padding-left: 5px;font-weight: normal">' +
                       d[4] + ':</td>'
                   }
+
                   tip.html('<table class="tooltipLegend"><tr>' +
-                    '<td class="legend-color-guide" style="' +
-                    styleColorLegend + 'background-color: ' +
-                    d[3] + ';"></td>' + name +
-                    '<td style="padding-left: 5px">' + d[0] +
+                    '<td class="legend-color-guide" style="background-color: ' +
+                    d[2] + ';"></td>' + name +
+                    '<td class="legend">' + d[0] +
                     ' % to ' +
                     d[1] + ' %</td></tr></table>');
                   tip.show();
@@ -458,11 +462,14 @@ angular.module("ngRadialGauge", [])
                 .append("path")
                 .attr("d", arc)
                 .on('mousemove', function(event) {
-                  tip.style("top", (d3.event.pageY - 51) + "px")
-                    .style("left", (d3.event.pageX - 51) + "px")
+                  if (scope.showTip) {
+                    tip.style("top", (d3.event.pageY - 51) + "px")
+                      .style("left", (d3.event.pageX - 51) + "px")
+                  }
+
                 })
-                .on('mouseover', scope.mouseover())
-                .on('mouseout', scope.mouseout())
+                .on('mouseover', scope.showTip ? scope.mouseover() : void 0)
+                .on('mouseout', scope.showTip ? scope.mouseout() : void 0)
                 .attr("fill", function(d) {
                   return d[2];
                 })
@@ -488,8 +495,11 @@ angular.module("ngRadialGauge", [])
                 .ease('elastic')
                 .attr('transform', 'rotate(' + needleAngle + ')');
               svg.selectAll('.mtt-graduationValueText')
-                .text('[ ' + pValue.toFixed(pPrecision) + pValueUnit +
-                  ' ]');
+                .text(pValue.toFixed(pPrecision));
+              svg.selectAll('.mtt-graduationUnitText')
+                .text(pValueUnit);
+              svg.selectAll(".mtt-middleCircle")
+                .attr("fill", getTotalColor(pValue));
             } else {
               svg.selectAll('.mtt-graduation-needle')
                 .remove();
