@@ -39,6 +39,18 @@ angular.module("ngRadialGauge", [])
           //New width variable, now works in conjunction with fixed viewBox sizing
           var _width = attrs.width || "100%";
 
+          var tip = d3.tip()
+            .direction('e') // s or e
+            .style('pointer-events', 'none')
+            .attr('class', 'd3-tip')
+            .style('line-height', '1')
+            .style('font-weight', 'bold')
+            .style('color', 'black')
+            .style('border-radius', '2px')
+            .style('padding', '10px')
+            .style('border', '1px solid grey')
+            .style('background-color', 'white');
+
           /* Colin Bester
              Width and height are not really such an issue with SVG but choose these values as
              width of 300 seems to be pretty baked into code.
@@ -230,7 +242,8 @@ angular.module("ngRadialGauge", [])
               var i;
 
               for (i = 0; i < d3DataSource.length; i++) {
-                if (value >= d3DataSource[i][0] && value < d3DataSource[i][1]) {
+                if (value >= d3DataSource[i][0] && value < d3DataSource[
+                    i][1]) {
                   return d3DataSource[i][2];
                 }
               }
@@ -374,7 +387,7 @@ angular.module("ngRadialGauge", [])
                 //Data Generation
                 ranges.forEach(function(pValue, index) {
                   d3DataSource.push([pValue.min, pValue.max,
-                    pValue.color, pValue.colorHover
+                    pValue.color, pValue.colorHover, pValue.name
                   ]);
                 });
               }
@@ -397,18 +410,46 @@ angular.module("ngRadialGauge", [])
                   return cScale(d[1]);
                 });
 
+
+              svg.call(tip);
+
+
               scope.mouseover = function() {
                 return function(d) {
+                  var name = '',
+                    styleTooltip = '',
+                    styleColorLegend = 'width: 8px;' +
+                    'height: 8px;' +
+                    'border: 1px solid #999;' +
+                    'vertical-align: middle;';
+                  if (d[4]) {
+                    name =
+                      '<td style="padding-left: 5px;font-weight: normal">' +
+                      d[4] + ':</td>'
+                  }
+                  tip.html('<table class="tooltipLegend"><tr>' +
+                    '<td class="legend-color-guide" style="' +
+                    styleColorLegend + 'background-color: ' +
+                    d[3] + ';"></td>' + name +
+                    '<td style="padding-left: 5px">' + d[0] +
+                    ' % to ' +
+                    d[1] + ' %</td></tr></table>');
+                  tip.show();
                   d3.select(this)
                     .attr('fill', d[3] || d[2])
                 };
               };
 
               scope.mouseout = function() {
-                d3.select(this)
-                  .attr('fill', function(d) {
-                    return d[2];
-                  })
+                return function(d) {
+                  tip.hide();
+                  d3.selectAll(".d3-tip")
+                    .style("opacity", 0);
+                  d3.select(this)
+                    .attr('fill', function(d) {
+                      return d[2];
+                    })
+                };
               };
 
               svg.selectAll("path")
@@ -416,11 +457,14 @@ angular.module("ngRadialGauge", [])
                 .enter()
                 .append("path")
                 .attr("d", arc)
+                .on('mousemove', function(event) {
+                  tip.style("top", (d3.event.pageY - 51) + "px")
+                    .style("left", (d3.event.pageX - 51) + "px")
+                })
                 .on('mouseover', scope.mouseover())
-                .on('mouseout', scope.mouseout)
+                .on('mouseout', scope.mouseout())
                 .attr("fill", function(d) {
                   return d[2];
-                  //Todo: tooltip here!
                 })
                 .attr("transform", translate);
 
