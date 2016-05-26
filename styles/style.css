@@ -1,0 +1,30 @@
+.d3-tip {
+  line-height: 1;
+  font-weight: bold;
+  color: black;
+  border-radius: 2px;
+  padding: 10px;
+  border: 1px solid grey;
+  background-color: white;
+}
+
+.d3-tip .legend-color-guide {
+  width: 8px;
+  height: 8px;
+  border: 1px solid #999;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.d3-tip .legend {
+  padding-left: 18px;
+}
+
+.mtt-middleCircle {
+  -webkit-transition: fill 500ms linear;
+  -moz-transition: fill 500ms linear;
+  -o-transition: fill 500ms linear;
+  -ms-transition: fill 500ms linear;
+  transition: fill 500ms linear;
+}
