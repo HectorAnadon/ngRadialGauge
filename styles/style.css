@@ -21,6 +21,15 @@
   padding-left: 18px;
 }
 
+.d3-tip .legendNumber {
+  padding-left: 10px;
+}
+
+.d3-tip .legendName {
+  padding-left: 10px;
+  font-weight: normal;
+}
+
 .mtt-middleCircle {
   -webkit-transition: fill 500ms linear;
   -moz-transition: fill 500ms linear;

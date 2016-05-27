@@ -425,17 +425,19 @@ angular.module("ngRadialGauge", [])
                 return function(d) {
                   if (scope.showTip) {
                     var name = '',
-                      styleTooltip = '';
+                      legendClass = 'legend';
+
                     if (d[4]) {
                       name =
-                        '<td style="padding-left: 5px;font-weight: normal">' +
-                        d[4] + ':</td>'
+                        '<td class="legendName">' +
+                        d[4] + ':</td>';
+                      legendClass = 'legendNumber';
                     }
 
                     tip.html('<table class="tooltipLegend"><tr>' +
                       '<td class="legend-color-guide" style="background-color: ' +
                       d[2] + ';"></td>' + name +
-                      '<td class="legend">' + d[0] +
+                      '<td class="' + legendClass + '">' + d[0] +
                       ' % to ' +
                       d[1] + ' %</td></tr></table>');
                     tip.show();
