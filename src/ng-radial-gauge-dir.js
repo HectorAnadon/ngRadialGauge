@@ -27,7 +27,8 @@ angular.module("ngRadialGauge", [])
           majorGraduationPrecision: '=',
           label: '@',
           onClick: '&',
-          showTip: '=?'
+          showTip: '=?',
+          onReady: '=?'
         },
         link: function(scope, ele, attrs) {
           var defaultUpperLimit = 100;
@@ -491,6 +492,9 @@ angular.module("ngRadialGauge", [])
               initialized = true;
             }, 200);
 
+            if (scope.onReady) {
+              scope.onReady();
+            }
           };
           var onValueChanged = function(pValue, pPrecision, pValueUnit) {
             if (typeof pValue === 'undefined' || pValue == null) return;
