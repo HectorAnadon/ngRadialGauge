@@ -116,7 +116,7 @@ angular.module("ngRadialGauge", [])
             var i;
 
             for (i = 0; i < ranges.length; i++) {
-              if (value >= ranges[i].min && value < ranges[i].max) {
+              if (value >= ranges[i].min && value <= ranges[i].max) {
                 return ranges[i].color;
               }
             }
