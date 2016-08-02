@@ -33,7 +33,6 @@ angular.module("ngRadialGauge", [])
         link: function(scope, ele, attrs) {
           var defaultUpperLimit = 100;
           var defaultLowerLimit = 0;
-          var initialized = false;
 
           var renderTimeout;
           var gaugeAngle = parseInt(attrs.angle) || 120;
@@ -489,7 +488,6 @@ angular.module("ngRadialGauge", [])
               renderMajorGraduations(majorGraduationsAngles);
               renderGraduationNeedle(value, valueUnit, precision,
                 minLimit, maxLimit, d3DataSource);
-              initialized = true;
             }, 200);
 
             if (scope.onReady) {
@@ -521,7 +519,6 @@ angular.module("ngRadialGauge", [])
             }
           };
           scope.$watchCollection('[value, data.value]', function() {
-            if (!initialized) return;
             updateInternalData();
             onValueChanged(value, precision, valueUnit);
           }, true);
